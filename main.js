@@ -53,7 +53,6 @@ import {
   deleteStoredPhoto,
 } from "./photofunctions.js";
 
-
 const NONE = -1;
 
 // surface types
@@ -110,6 +109,8 @@ let rotAngle = 0;
 let raytracingSphereRadius = 100.0;
 
 let autofocus = false;
+
+let distance;
 
 // the menu
 let gui;
@@ -280,12 +281,15 @@ function init() {
 function addLensFan() {
   let i;
   let vis = [true, true, true];
-  for(i=0; i<3; i++) {
-    let corner = new THREE.Vector3(0, 0, 0);
+  for (i = 0; i < 3; i++) {
+    let corner = new THREE.Vector3(0, -0.5, -2);
     let u = new THREE.Vector3(0, 1, 0);
-    let v = new THREE.Vector3(Math.sin(1*i), 0, Math.cos(1*i));
-    let p = (new THREE.Vector3(0, 0, 0)).copy(corner).addScaledVector(u, 0.5).addScaledVector(v, 0.5);
-    let a = (new THREE.Vector3(0, 0, 0)).crossVectors(u, v);
+    let v = new THREE.Vector3(Math.sin(1 * i), 0, Math.cos(1 * i));
+    let p = new THREE.Vector3(0, 0, 0)
+      .copy(corner)
+      .addScaledVector(u, 0.5)
+      .addScaledVector(v, 0.5);
+    let a = new THREE.Vector3(0, 0, 0).crossVectors(u, v);
     let rectangleTemp = {
       visible: vis[i],
       corner: corner,
@@ -301,9 +305,9 @@ function addLensFan() {
     let lensSurfaceTemp = {
       principalPoint: p,
       opticalAxisDirection: a,
-      focalLength: i+1,
+      focalLength: i + 1,
       transmissionCoefficient: 0.95,
-      lensType: LENS_TYPE_IDEAL
+      lensType: LENS_TYPE_IDEAL,
     };
     lensSurfaces.push(lensSurfaceTemp);
   }
@@ -345,19 +349,6 @@ function updateUniforms() {
   let apertureBasisVector2 = new THREE.Vector3();
   infoObject.camera.getWorldDirection(viewDirection);
   viewDirection.normalize();
-
-  // this bit should be useless?
-  // if (viewDirection.x == 0.0 && viewDirection.y == 0.0) {
-  //   // viewDirection is along z direction
-  //   apertureBasisVector1
-  //     .crossVectors(viewDirection, new THREE.Vector3(1, 0, 0))
-  //     .normalize();
-  // } else {
-  //   // viewDirection is not along z direction
-  //   apertureBasisVector1
-  //     .crossVectors(viewDirection, new THREE.Vector3(0, 0, 1))
-  //     .normalize();
-  // }
 
   apertureBasisVector1
     .crossVectors(THREE.Object3D.DEFAULT_UP, viewDirection)
@@ -776,12 +767,38 @@ function createGUI() {
     .add(GUIParams, "showLens")
     .name(showLens2String(infoObject.raytracingSphereShaderMaterial));
 
+  // lensFolder
+  //   .add(GUIParams, "rotAngle", 0, 360, 1)
+  //   .name("Rotation angle")
+  //   .onChange((lens_rot) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.rotAngle.value =
+  //       lens_rot;
+  //   });
+  let distance_array = [];
+  distance = { distance1: 0, distance2: 0, distance3: 0 };
+
   lensFolder
-    .add(GUIParams, "rotAngle", 0, 360, 1)
-    .name("Rotation angle")
-    .onChange((lens_rot) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.rotAngle.value =
-        lens_rot;
+    .add(distance, "distance1")
+    .name("<i>d</i><sub>+1</sub>")
+    .onChange((d1) => {
+      distance_array[0] = d1;
+      console.log(distance_array[0]);
+    });
+
+  lensFolder
+    .add(distance, "distance2")
+    .name("<i>d</i><sub>+2</sub>")
+    .onChange((d2) => {
+      distance_array[1] = d2;
+      console.log(distance_array[1]);
+    });
+
+  lensFolder
+    .add(distance, "distance3")
+    .name("<i>d</i><sub>+3</sub>")
+    .onChange((d3) => {
+      distance_array[2] = d3;
+      console.log(distance_array[2]);
     });
 
   gui.add(GUIParams, "Point forward (in -<b>z</b> direction)");
