@@ -53,6 +53,14 @@ import {
   deleteStoredPhoto,
 } from "./photofunctions.js";
 
+import {
+  degToRad,
+  radToDeg,
+  calculatePrincipalPoints,
+  calculateFocalLength,
+  calculateDeltaThree,
+} from "./calculateParameters.js";
+
 const NONE = -1;
 
 // surface types
@@ -84,6 +92,7 @@ let backgroundTexture;
 let orbitControls;
 let dragControls;
 let raytracingSphere;
+let distance_array = [0.1, 0.1, 0.1];
 
 let yShift = 0;
 
@@ -109,8 +118,6 @@ let rotAngle = 0;
 let raytracingSphereRadius = 100.0;
 
 let autofocus = false;
-
-let distance;
 
 // the menu
 let gui;
@@ -165,7 +172,9 @@ const infoObject = {
   noOfRays: 1,
   storedPhotoDescription: undefined,
 };
-
+let corner = new THREE.Vector3(-0.5, -0.5, -0);
+let corner2 = new THREE.Vector3(-0.5, -0.5, -2);
+let theta = [degToRad(15), degToRad(-15), degToRad(-21.09058118)];
 init();
 animate();
 
@@ -278,13 +287,14 @@ function init() {
   refreshInfo(infoObject);
 }
 
-function addLensFan() {
+function addLensFan(corner, theta, distance) {
   let i;
   let vis = [true, true, true];
+  let focalLengths = calculateFocalLength(3, distance, theta);
+  let principalPoints = calculatePrincipalPoints(3, distance, theta);
   for (i = 0; i < 3; i++) {
-    let corner = new THREE.Vector3(0, -0.5, -2);
     let u = new THREE.Vector3(0, 1, 0);
-    let v = new THREE.Vector3(Math.sin(1 * i), 0, Math.cos(1 * i));
+    let v = new THREE.Vector3(Math.sin(0.5 * i), 0, Math.cos(0.5 * i));
     let p = new THREE.Vector3(0, 0, 0)
       .copy(corner)
       .addScaledVector(u, 0.5)
@@ -305,12 +315,13 @@ function addLensFan() {
     let lensSurfaceTemp = {
       principalPoint: p,
       opticalAxisDirection: a,
-      focalLength: i + 1,
+      focalLength: focalLengths[i],
       transmissionCoefficient: 0.95,
       lensType: LENS_TYPE_IDEAL,
     };
     lensSurfaces.push(lensSurfaceTemp);
   }
+  return focalLengths;
 }
 
 function animate() {
@@ -382,10 +393,12 @@ function updateUniforms() {
       focusDistance;
     // GUIParams.'tan<sup>-1</sup>(focus. dist.)'.value = atanFocusDistance;
   }
-
   rectangles = [];
   lensSurfaces = [];
-  addLensFan();
+
+  addLensFan(corner, theta, distance_array);
+  addLensFan(corner2, theta, distance_array);
+  let fl = addLensFan(corner2, distance_array, theta);
 }
 
 /** create raytracing phere */
@@ -421,8 +434,9 @@ function addRaytracingSphere() {
 
   rectangles = [];
   lensSurfaces = [];
-  addLensFan();
 
+  addLensFan(corner, distance_array, theta);
+  addLensFan(corner2, distance_array, theta);
   // the sphere surrounding the camera in all directions
   const geometry = new THREE.SphereGeometry(raytracingSphereRadius);
   infoObject.raytracingSphereShaderMaterial = new THREE.ShaderMaterial({
@@ -686,80 +700,80 @@ function createGUI() {
       console.log(h_sphere);
     });
 
-  const cloakFolder = gui.addFolder("Axicon Cloak Controls");
+  // const cloakFolder = gui.addFolder("Axicon Cloak Controls");
 
-  showCloakControl = cloakFolder
-    .add(GUIParams, "showCloak")
-    .name(showCloak2String(infoObject.raytracingSphereShaderMaterial));
+  // showCloakControl = cloakFolder
+  //   .add(GUIParams, "showCloak")
+  //   .name(showCloak2String(infoObject.raytracingSphereShaderMaterial));
 
-  showOuterCylinderControl = cloakFolder
-    .add(GUIParams, "showOuterCylinder")
-    .name(showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial));
+  // showOuterCylinderControl = cloakFolder
+  //   .add(GUIParams, "showOuterCylinder")
+  //   .name(showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial));
 
-  cloakFolder
-    .add(GUIParams, "outerRadius", 0, 1)
-    .name("<i>r</i><sub>outer</sub>")
-    .onChange((r_outer) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.outerRadius.value =
-        r_outer;
-    });
+  // cloakFolder
+  //   .add(GUIParams, "outerRadius", 0, 1)
+  //   .name("<i>r</i><sub>outer</sub>")
+  //   .onChange((r_outer) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerRadius.value =
+  //       r_outer;
+  //   });
 
-  cloakFolder
-    .add(GUIParams, "outerYcoord", -1, 1)
-    .name("<i>y</i><sub>outer</sub>")
-    .onChange((y_outer) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.outerYcoord.value =
-        y_outer;
-    });
+  // cloakFolder
+  //   .add(GUIParams, "outerYcoord", -1, 1)
+  //   .name("<i>y</i><sub>outer</sub>")
+  //   .onChange((y_outer) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerYcoord.value =
+  //       y_outer;
+  //   });
 
-  cloakFolder
-    .add(GUIParams, "outerHeightNegative", -1, 0, 0.1)
-    .name("<i>h</i><sub>-outer</sub>")
-    .onChange((h_outer_neg) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightNegative.value =
-        h_outer_neg;
-    });
-  cloakFolder
-    .add(GUIParams, "outerHeightPositive", 0, 1, 0.1)
-    .name("<i>h</i><sub>+outer</sub>")
-    .onChange((h_outer_pos) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightPositive.value =
-        h_outer_pos;
-    });
+  // cloakFolder
+  //   .add(GUIParams, "outerHeightNegative", -1, 0, 0.1)
+  //   .name("<i>h</i><sub>-outer</sub>")
+  //   .onChange((h_outer_neg) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightNegative.value =
+  //       h_outer_neg;
+  //   });
+  // cloakFolder
+  //   .add(GUIParams, "outerHeightPositive", 0, 1, 0.1)
+  //   .name("<i>h</i><sub>+outer</sub>")
+  //   .onChange((h_outer_pos) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightPositive.value =
+  //       h_outer_pos;
+  //   });
 
-  showInnerCylinderControl = cloakFolder
-    .add(GUIParams, "showInnerCylinder")
-    .name(showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial));
-  cloakFolder
-    .add(GUIParams, "innerRadius", 0, 1)
-    .name("<i>r</i><sub>innner</sub>")
-    .onChange((r_inner) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.innerRadius.value =
-        r_inner;
-    });
+  // showInnerCylinderControl = cloakFolder
+  //   .add(GUIParams, "showInnerCylinder")
+  //   .name(showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial));
+  // cloakFolder
+  //   .add(GUIParams, "innerRadius", 0, 1)
+  //   .name("<i>r</i><sub>innner</sub>")
+  //   .onChange((r_inner) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerRadius.value =
+  //       r_inner;
+  //   });
 
-  cloakFolder
-    .add(GUIParams, "innerYcoord", -1, 1)
-    .name("<i>y</i><sub>inner</sub>")
-    .onChange((y_inner) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.innerYcoord.value =
-        y_inner;
-    });
+  // cloakFolder
+  //   .add(GUIParams, "innerYcoord", -1, 1)
+  //   .name("<i>y</i><sub>inner</sub>")
+  //   .onChange((y_inner) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerYcoord.value =
+  //       y_inner;
+  //   });
 
-  cloakFolder
-    .add(GUIParams, "innerHeightNegative", -1, 0, 0.1)
-    .name("<i>h</i><sub>-inner</sub>")
-    .onChange((h_inner_neg) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightNegative.value =
-        h_inner_neg;
-    });
-  cloakFolder
-    .add(GUIParams, "innerHeightPositive", 0, 1, 0.1)
-    .name("<i>h</i><sub>+inner</sub>")
-    .onChange((h_inner_pos) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightPositive.value =
-        h_inner_pos;
-    });
+  // cloakFolder
+  //   .add(GUIParams, "innerHeightNegative", -1, 0, 0.1)
+  //   .name("<i>h</i><sub>-inner</sub>")
+  //   .onChange((h_inner_neg) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightNegative.value =
+  //       h_inner_neg;
+  //   });
+  // cloakFolder
+  //   .add(GUIParams, "innerHeightPositive", 0, 1, 0.1)
+  //   .name("<i>h</i><sub>+inner</sub>")
+  //   .onChange((h_inner_pos) => {
+  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightPositive.value =
+  //       h_inner_pos;
+  //   });
 
   const lensFolder = gui.addFolder("Lens Controls ");
 
@@ -774,31 +788,63 @@ function createGUI() {
   //     infoObject.raytracingSphereShaderMaterial.uniforms.rotAngle.value =
   //       lens_rot;
   //   });
-  let distance_array = [];
-  distance = { distance1: 0, distance2: 0, distance3: 0 };
+
+  let theta1 = 15;
+  let theta2 = -15;
+  let thetaRad = [degToRad(theta1), degToRad(theta2)];
+  let thetaArray = calculateDeltaThree(thetaRad);
+
+  let distance = { distance1: 0, distance2: 0, distance3: 0 };
+  let angle = {
+    angle1: theta1,
+    angle2: theta2,
+    angle3: radToDeg(thetaArray[2]),
+  };
 
   lensFolder
-    .add(distance, "distance1")
-    .name("<i>d</i><sub>+1</sub>")
+    .add(angle, "angle1", -180, 180, 0.1)
+    .name("\u0394\u0398<sub>1</sub>")
+    .onChange((a1) => {
+      thetaRad[0] = degToRad(a1);
+      calculateDeltaThree(thetaRad);
+      angle.angle3 = radToDeg(thetaRad[2]);
+      console.log(angle.angle3);
+    });
+  lensFolder
+    .add(angle, "angle2", -180, 180, 0.1)
+    .name("\u0394\u0398<sub>2</sub>")
+    .onChange((a2) => {
+      thetaRad[1] = degToRad(a2);
+      calculateDeltaThree(thetaRad);
+      angle.angle3 = radToDeg(thetaRad[2]);
+      console.log(angle.angle3);
+    });
+
+  lensFolder
+    .add(angle, "angle3")
+    .name("\u0394\u0398<sub>3</sub>")
+    .decimals(4)
+    .listen(); //update the deltaTheta3 gui according to the changes made to deltaTheta1 and deltaTheta2
+
+  lensFolder
+    .add(distance, "distance1", 0, 1, 0.1)
+    .name("<i>d</i><sub>1</sub>")
     .onChange((d1) => {
       distance_array[0] = d1;
-      console.log(distance_array[0]);
     });
 
   lensFolder
-    .add(distance, "distance2")
-    .name("<i>d</i><sub>+2</sub>")
+    .add(distance, "distance2", 0, 1, 0.1)
+    .name("<i>d</i><sub>2</sub>")
     .onChange((d2) => {
       distance_array[1] = d2;
-      console.log(distance_array[1]);
     });
 
   lensFolder
-    .add(distance, "distance3")
-    .name("<i>d</i><sub>+3</sub>")
+    .add(distance, "distance3", 0, 1, 0.1)
+    .name("<i>d</i><sub>3</sub>")
     .onChange((d3) => {
       distance_array[2] = d3;
-      console.log(distance_array[2]);
     });
 
   gui.add(GUIParams, "Point forward (in -<b>z</b> direction)");
