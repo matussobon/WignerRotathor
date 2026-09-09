@@ -182,48 +182,6 @@ function init() {
   // create the info element first so that any problems can be communicated
   createStatus();
 
-  // rectangle0 = {
-  //   corner: new THREE.Vector3(-0.5, 0, 0),
-  //   uSpanVector: new THREE.Vector3(1, 0, 0),
-  //   vSpanVector: new THREE.Vector3(0, 1, 0),
-  //   uSize: 1.0,
-  //   vSize: 1.0,
-  //   surfaceType: SURFACE_TYPE_LENS,
-  //   surfaceIndex: 0,
-  // };
-
-  // rectangle1 = {
-  //   corner: new THREE.Vector3(-0.5, 0, 0),
-  //   uSpanVector: new THREE.Vector3(1, 0, 0),
-  //   vSpanVector: new THREE.Vector3(0, -1, 0),
-  //   uSize: 1,
-  //   vSize: 1,
-  //   surfaceType: SURFACE_TYPE_LENS,
-  //   surfaceIndex: 1,
-  // };
-
-  // rectangles.push(rectangle0, rectangle1);
-
-  // lensSurface0 = {
-  //   principalPoint: new THREE.Vector3(0, 0.5, 0),
-  //   opticalAxisDirection: new THREE.Vector3(0, 0, 1),
-  //   focalLength: 10,
-  //   transmissionCoefficient: 0.95,
-  //   lensType: LENS_TYPE_IDEAL
-  // };
-
-  // lensSurface1 = {
-  //   principalPoint: new THREE.Vector3(0, -0.5, 0),
-  //   opticalAxisDirection: new THREE.Vector3(0, 0, 1),
-  //   focalLength: 1,
-  //   transmissionCoefficient: 0.95,
-  //   lensType: LENS_TYPE_IDEAL
-  // };
-
-  // lensSurfaces.push(lensSurface0, lensSurface1);
-
-  // addLensFan();
-
   scene = new THREE.Scene();
   // scene.background = new THREE.Color( 'skyblue' );
   let windowAspectRatio = window.innerWidth / window.innerHeight;
@@ -231,7 +189,7 @@ function init() {
     infoObject.fovScreen,
     windowAspectRatio,
     0.1,
-    2 * raytracingSphereRadius + 1
+    2 * raytracingSphereRadius + 1,
   );
   infoObject.camera.position.z = 1;
   screenChanged(renderer, infoObject.camera, infoObject.fovScreen);
@@ -249,7 +207,7 @@ function init() {
 
   backgroundTexture = loadBackgroundImage(
     infoObject.background,
-    backgroundTexture
+    backgroundTexture,
   );
 
   addRaytracingSphere();
@@ -372,13 +330,13 @@ function updateUniforms() {
   infoObject.raytracingSphereShaderMaterial.uniforms.noOfRays.value =
     infoObject.noOfRays;
   infoObject.raytracingSphereShaderMaterial.uniforms.apertureXHat.value.copy(
-    apertureBasisVector1
+    apertureBasisVector1,
   );
   infoObject.raytracingSphereShaderMaterial.uniforms.apertureYHat.value.copy(
-    apertureBasisVector2
+    apertureBasisVector2,
   );
   infoObject.raytracingSphereShaderMaterial.uniforms.viewDirection.value.copy(
-    viewDirection
+    viewDirection,
   );
   infoObject.raytracingSphereShaderMaterial.uniforms.apertureRadius.value =
     infoObject.apertureRadius;
@@ -452,17 +410,7 @@ function addRaytracingSphere() {
       sphereRadius: { value: sphereRadius },
       sphereHeight: { value: sphereHeight },
       showSphere: { value: false },
-      outerRadius: { value: outerRadius },
-      outerHeightNegative: { value: outerHeightNegative },
-      outerHeightPositive: { value: outerHeightPositive },
-      outerYcoord: { value: outerYcoord },
       phaseShift: { value: phaseShift },
-      innerRadius: { value: innerRadius },
-      innerHeightNegative: { value: innerHeightNegative },
-      innerHeightPositive: { value: innerHeightPositive },
-      innerYcoord: { value: innerYcoord },
-      showInnerCylinder: { value: true },
-      showOuterCylinder: { value: true },
       yShift: { value: yShift },
       showCloak: { value: false },
       showLens: { value: true },
@@ -512,7 +460,7 @@ function addRaytracingSphere() {
 
   raytracingSphere = new THREE.Mesh(
     geometry,
-    infoObject.raytracingSphereShaderMaterial
+    infoObject.raytracingSphereShaderMaterial,
   );
   scene.add(raytracingSphere);
 }
@@ -553,7 +501,7 @@ function createGUI() {
       infoObject.background = (infoObject.background + 1) % 5;
       backgroundTexture = loadBackgroundImage(
         infoObject.background,
-        backgroundTexture
+        backgroundTexture,
       );
       backgroundControl.name(background2String(infoObject.background));
     },
@@ -562,12 +510,7 @@ function createGUI() {
     outerRadius: outerRadius,
     rotAngle: rotAngle,
     yShift: yShift,
-    outerHeightNegative: outerHeightNegative,
-    outerHeightPositive: outerHeightPositive,
     phaseShift: phaseShift,
-    innerRadius: innerRadius,
-    outerYcoord: outerYcoord,
-    innerYcoord: innerYcoord,
     innerHeightNegative: innerHeightNegative,
     innerHeightPositive: innerHeightPositive,
     sphereCentreX: infoObject.sphereCentre.x,
@@ -577,21 +520,21 @@ function createGUI() {
       infoObject.raytracingSphereShaderMaterial.uniforms.showSphere.value =
         !infoObject.raytracingSphereShaderMaterial.uniforms.showSphere.value;
       showSphereControl.name(
-        showSphere2String(infoObject.raytracingSphereShaderMaterial)
+        showSphere2String(infoObject.raytracingSphereShaderMaterial),
       );
     },
     showCloak: () => {
       infoObject.raytracingSphereShaderMaterial.uniforms.showCloak.value =
         !infoObject.raytracingSphereShaderMaterial.uniforms.showCloak.value;
       showCloakControl.name(
-        showCloak2String(infoObject.raytracingSphereShaderMaterial)
+        showCloak2String(infoObject.raytracingSphereShaderMaterial),
       );
     },
     showLens: () => {
       infoObject.raytracingSphereShaderMaterial.uniforms.showLens.value =
         !infoObject.raytracingSphereShaderMaterial.uniforms.showLens.value;
       showLensControl.name(
-        showLens2String(infoObject.raytracingSphereShaderMaterial)
+        showLens2String(infoObject.raytracingSphereShaderMaterial),
       );
       console.log("works");
     },
@@ -601,7 +544,7 @@ function createGUI() {
         !infoObject.raytracingSphereShaderMaterial.uniforms.showInnerCylinder
           .value;
       showInnerCylinderControl.name(
-        showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial)
+        showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial),
       );
     },
     showOuterCylinder: () => {
@@ -609,7 +552,7 @@ function createGUI() {
         !infoObject.raytracingSphereShaderMaterial.uniforms.showOuterCylinder
           .value;
       showOuterCylinderControl.name(
-        showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial)
+        showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial),
       );
     },
     // x1: infoObject.x1,
@@ -626,16 +569,13 @@ function createGUI() {
       Math.log10(
         1 -
           infoObject.raytracingSphereShaderMaterial.uniforms
-            .reflectionCoefficient.value
+            .reflectionCoefficient.value,
       ),
     makeEyeLevel: () => {
       infoObject.raytracingSphereShaderMaterial.uniforms.yShift.value =
         infoObject.camera.position.y;
       console.log(yShift);
     },
-    // meshRotX: meshRotationX,
-    // meshRotY: meshRotationY,
-    // meshRotZ: meshRotationZ
   };
 
   gui
@@ -673,10 +613,6 @@ function createGUI() {
   //     infoObject.raytracingSphereShaderMaterial.uniforms.reflectionCoefficient.value =
   //       1 - Math.pow(10, 0.1 * l);
   //   });
-  // remove these for the moment
-  // gui.add( GUIParams, 'sphereCentreX', -5, 5 ).name( "<i>x</i><sub>sphere</sub>" ).onChange( (x) => { sphereCentre.x = x; } );
-  // gui.add( GUIParams, 'sphereCentreY',  0, 5 ).name( "<i>y</i><sub>sphere</sub>" ).onChange( (y) => { sphereCentre.y = y; } );
-  // gui.add( GUIParams, 'sphereCentreZ', -5, 5 ).name( "<i>z</i><sub>sphere</sub>" ).onChange( (z) => { sphereCentre.z = z; } );
 
   const sphereFolder = gui.addFolder("Sphere Controls");
 
@@ -699,81 +635,6 @@ function createGUI() {
         h_sphere;
       console.log(h_sphere);
     });
-
-  // const cloakFolder = gui.addFolder("Axicon Cloak Controls");
-
-  // showCloakControl = cloakFolder
-  //   .add(GUIParams, "showCloak")
-  //   .name(showCloak2String(infoObject.raytracingSphereShaderMaterial));
-
-  // showOuterCylinderControl = cloakFolder
-  //   .add(GUIParams, "showOuterCylinder")
-  //   .name(showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial));
-
-  // cloakFolder
-  //   .add(GUIParams, "outerRadius", 0, 1)
-  //   .name("<i>r</i><sub>outer</sub>")
-  //   .onChange((r_outer) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerRadius.value =
-  //       r_outer;
-  //   });
-
-  // cloakFolder
-  //   .add(GUIParams, "outerYcoord", -1, 1)
-  //   .name("<i>y</i><sub>outer</sub>")
-  //   .onChange((y_outer) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerYcoord.value =
-  //       y_outer;
-  //   });
-
-  // cloakFolder
-  //   .add(GUIParams, "outerHeightNegative", -1, 0, 0.1)
-  //   .name("<i>h</i><sub>-outer</sub>")
-  //   .onChange((h_outer_neg) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightNegative.value =
-  //       h_outer_neg;
-  //   });
-  // cloakFolder
-  //   .add(GUIParams, "outerHeightPositive", 0, 1, 0.1)
-  //   .name("<i>h</i><sub>+outer</sub>")
-  //   .onChange((h_outer_pos) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.outerHeightPositive.value =
-  //       h_outer_pos;
-  //   });
-
-  // showInnerCylinderControl = cloakFolder
-  //   .add(GUIParams, "showInnerCylinder")
-  //   .name(showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial));
-  // cloakFolder
-  //   .add(GUIParams, "innerRadius", 0, 1)
-  //   .name("<i>r</i><sub>innner</sub>")
-  //   .onChange((r_inner) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerRadius.value =
-  //       r_inner;
-  //   });
-
-  // cloakFolder
-  //   .add(GUIParams, "innerYcoord", -1, 1)
-  //   .name("<i>y</i><sub>inner</sub>")
-  //   .onChange((y_inner) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerYcoord.value =
-  //       y_inner;
-  //   });
-
-  // cloakFolder
-  //   .add(GUIParams, "innerHeightNegative", -1, 0, 0.1)
-  //   .name("<i>h</i><sub>-inner</sub>")
-  //   .onChange((h_inner_neg) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightNegative.value =
-  //       h_inner_neg;
-  //   });
-  // cloakFolder
-  //   .add(GUIParams, "innerHeightPositive", 0, 1, 0.1)
-  //   .name("<i>h</i><sub>+inner</sub>")
-  //   .onChange((h_inner_pos) => {
-  //     infoObject.raytracingSphereShaderMaterial.uniforms.innerHeightPositive.value =
-  //       h_inner_pos;
-  //   });
 
   const lensFolder = gui.addFolder("Lens Controls ");
 
@@ -851,9 +712,6 @@ function createGUI() {
   backgroundControl = gui
     .add(GUIParams, "background")
     .name(background2String(infoObject.background));
-  // gui.add( GUIParams, 'meshRotX', -Math.PI, Math.PI ).name('Rot x').onChange( (a) => { meshRotationX = a; })
-  // gui.add( GUIParams, 'meshRotY', -Math.PI, Math.PI ).name('Rot y').onChange( (a) => { meshRotationY = a; })
-  // gui.add( GUIParams, 'meshRotZ', -Math.PI, Math.PI ).name('Rot z').onChange( (a) => { meshRotationZ = a; })
 
   // const folderVirtualCamera = gui.addFolder( 'Virtual camera' );
   gui.add(GUIParams, "Horiz. FOV (&deg;)", 1, 170, 1).onChange((fov) => {
@@ -899,13 +757,13 @@ function addXRInteractivity() {
 
   const controllerGrip1 = renderer.xr.getControllerGrip(0);
   controllerGrip1.add(
-    controllerModelFactory.createControllerModel(controllerGrip1)
+    controllerModelFactory.createControllerModel(controllerGrip1),
   );
   scene.add(controllerGrip1);
 
   const controllerGrip2 = renderer.xr.getControllerGrip(1);
   controllerGrip2.add(
-    controllerModelFactory.createControllerModel(controllerGrip2)
+    controllerModelFactory.createControllerModel(controllerGrip2),
   );
   scene.add(controllerGrip2);
 
@@ -957,18 +815,18 @@ function createVideoFeeds() {
             videoFeedU.videoWidth / videoFeedU.videoHeight;
           updateUniforms();
           postStatus(
-            `User-facing(?) camera resolution ${videoFeedU.videoWidth} &times; ${videoFeedU.videoHeight}`
+            `User-facing(?) camera resolution ${videoFeedU.videoWidth} &times; ${videoFeedU.videoHeight}`,
           );
         });
       })
       .catch(function (error) {
         postStatus(
-          `Unable to access user-facing camera/webcam (Error: ${error})`
+          `Unable to access user-facing camera/webcam (Error: ${error})`,
         );
       });
   } else {
     postStatus(
-      "MediaDevices interface, which is required for video streams from device cameras, not available."
+      "MediaDevices interface, which is required for video streams from device cameras, not available.",
     );
   }
 
@@ -998,18 +856,18 @@ function createVideoFeeds() {
             videoFeedE.videoWidth / videoFeedE.videoHeight;
           updateUniforms();
           postStatus(
-            `Environment-facing(?) camera resolution ${videoFeedE.videoWidth} &times; ${videoFeedE.videoHeight}`
+            `Environment-facing(?) camera resolution ${videoFeedE.videoWidth} &times; ${videoFeedE.videoHeight}`,
           );
         });
       })
       .catch(function (error) {
         postStatus(
-          `Unable to access environment-facing camera/webcam (Error: ${error})`
+          `Unable to access environment-facing camera/webcam (Error: ${error})`,
         );
       });
   } else {
     postStatus(
-      "MediaDevices interface, which is required for video streams from device cameras, not available."
+      "MediaDevices interface, which is required for video streams from device cameras, not available.",
     );
   }
 }
@@ -1024,7 +882,7 @@ function addEventListenersEtc() {
     () => {
       onWindowResize(renderer, infoObject.camera, infoObject.fovScreen);
     },
-    false
+    false,
   );
 
   // handle screen-orientation (landscape/portrait) change
@@ -1070,7 +928,7 @@ function addEventListenersEtc() {
   document
     .getElementById("storedPhotoThumbnail")
     .addEventListener("click", () =>
-      showStoredPhoto(renderer, gui, infoObject)
+      showStoredPhoto(renderer, gui, infoObject),
     );
 
   document.getElementById("storedPhotoThumbnail").style.visibility = "hidden";
@@ -1103,7 +961,7 @@ function addDragControls() {
   dragControls = new DragControls(
     objects,
     infoObject.camera,
-    renderer.domElement
+    renderer.domElement,
   );
 
   // add event listener to highlight dragged objects
@@ -1126,7 +984,7 @@ async function share() {
           infoObject.storedPhotoDescription + ".png",
           {
             type: blob.type,
-          }
+          },
         );
 
         // Use the Web Share API to share the screenshot
