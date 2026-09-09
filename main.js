@@ -553,23 +553,6 @@ function createGUI() {
     },
   };
 
-  gui
-    .add(GUIParams, "noOfReflections", 0, 200, 1)
-    .name("Max. reflections")
-    .onChange((r) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.maxTraceLevel.value =
-        r + 2;
-    });
-  gui
-    .add(GUIParams, "phaseShift", 0, 1, 0.05)
-    .name("Hologram Phase shift")
-    .onChange((pShift) => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.phaseShift.value =
-        pShift;
-      console.log(pShift);
-    });
-
-  gui.add(GUIParams, "makeEyeLevel").name("Move resonator to eye level");
   // // gui.add( GUIParams, 'reflectionCoefficient9s', 0, 3, 0.1 ).name( '<div class="tooltip">Nines(<i>R</i>)<span class="tooltiptext">The number of <a href="https://en.m.wikipedia.org/wiki/Nines_(notation)">nines</a><br>in the reflection<br>coefficient, <i>R</i>.<br>E.g. Nines(0.99) = 2.</span></div> ' ).onChange( (l) => { raytracingSphereShaderMaterial.uniforms.reflectionCoefficient.value = 1-Math.pow(10, -l); } );
   // gui
   //   .add(GUIParams, "reflectionLossDB", -30, 0, 0.1)
@@ -673,22 +656,29 @@ function createGUI() {
       distance_array[2] = d3;
     });
 
-  gui.add(GUIParams, "Point forward (in -<b>z</b> direction)");
-  backgroundControl = gui
-    .add(GUIParams, "background")
-    .name(background2String(infoObject.background));
+  const MiscFolder = gui.addFolder("Miscellaneous Controls ").open(false);
+  MiscFolder.add(GUIParams, "Point forward (in -<b>z</b> direction)");
+  backgroundControl = MiscFolder.add(GUIParams, "background").name(
+    background2String(infoObject.background),
+  );
 
   // const folderVirtualCamera = gui.addFolder( 'Virtual camera' );
-  gui.add(GUIParams, "Horiz. FOV (&deg;)", 1, 170, 1).onChange((fov) => {
+  MiscFolder.add(GUIParams, "Horiz. FOV (&deg;)", 1, 170, 1).onChange((fov) => {
     screenChanged(renderer, infoObject.camera, fov);
     infoObject.fovScreen = fov;
   });
-  gui.add(GUIParams, "No of rays", 1, 100, 1).onChange((n) => {
+  MiscFolder.add(GUIParams, "No of rays", 1, 100, 1).onChange((n) => {
     infoObject.noOfRays = n;
   });
+  MiscFolder.add(GUIParams, "noOfReflections", 0, 200, 1)
+    .name("Max. reflections")
+    .onChange((r) => {
+      infoObject.raytracingSphereShaderMaterial.uniforms.maxTraceLevel.value =
+        r + 2;
+    });
 
   if (renderer.xr.enabled) {
-    vrControlsVisibleControl = gui.add(GUIParams, "vrControlsVisible");
+    vrControlsVisibleControl = MiscFolder.add(GUIParams, "vrControlsVisible");
   }
 
   // create the GUI mesh at the end to make sure that it includes all controls
