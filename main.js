@@ -507,12 +507,9 @@ function createGUI() {
     },
     sphereRadius: sphereRadius,
     sphereHeight: sphereHeight,
-    outerRadius: outerRadius,
     rotAngle: rotAngle,
     yShift: yShift,
     phaseShift: phaseShift,
-    innerHeightNegative: innerHeightNegative,
-    innerHeightPositive: innerHeightPositive,
     sphereCentreX: infoObject.sphereCentre.x,
     sphereCentreY: infoObject.sphereCentre.y,
     sphereCentreZ: infoObject.sphereCentre.z,
@@ -539,30 +536,8 @@ function createGUI() {
       console.log("works");
     },
 
-    showInnerCylinder: () => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.showInnerCylinder.value =
-        !infoObject.raytracingSphereShaderMaterial.uniforms.showInnerCylinder
-          .value;
-      showInnerCylinderControl.name(
-        showInnerCylinder2String(infoObject.raytracingSphereShaderMaterial),
-      );
-    },
-    showOuterCylinder: () => {
-      infoObject.raytracingSphereShaderMaterial.uniforms.showOuterCylinder.value =
-        !infoObject.raytracingSphereShaderMaterial.uniforms.showOuterCylinder
-          .value;
-      showOuterCylinderControl.name(
-        showOuterCylinder2String(infoObject.raytracingSphereShaderMaterial),
-      );
-    },
     // x1: infoObject.x1,
-    resonatorY: infoObject.resonatorY,
-    cylindricalMirrors: function () {
-      infoObject.raytracingSphereShaderMaterial.uniforms.cylindricalMirrors.value =
-        !infoObject.raytracingSphereShaderMaterial.uniforms.cylindricalMirrors
-          .value;
-      cylindricalMirrorsControl.name(cylindricalMirrors2String());
-    },
+
     // reflectionCoefficient9s: -Math.log10(1-raytracingSphereShaderMaterial.uniforms.reflectionCoefficient.value),
     reflectionLossDB:
       10 *
@@ -592,16 +567,6 @@ function createGUI() {
       infoObject.raytracingSphereShaderMaterial.uniforms.phaseShift.value =
         pShift;
       console.log(pShift);
-    });
-
-  resonatorYControl = gui
-    .add(GUIParams, "resonatorY", 0, 3, 0.001)
-    .name("<i>y</i><sub>cloak</sub>")
-    .onChange((y_res) => {
-      infoObject.resonatorY = y_res;
-      infoObject.raytracingSphereShaderMaterial.uniforms.yShift.value = y_res;
-      refreshInfo(infoObject);
-      console.log(y_res);
     });
 
   gui.add(GUIParams, "makeEyeLevel").name("Move resonator to eye level");
